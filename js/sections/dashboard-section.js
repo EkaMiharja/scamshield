@@ -27,8 +27,10 @@ window.sections.dashboard = `
         <ul id="checklist" class="checklist"></ul>
       </div>
       <div class="card">
-        <h3 class="card-title">Rincian Risiko</h3>
-        <ul id="breakdown" class="breakdown"></ul>
+        <h3 class="card-title">Analisis Sentry AI</h3>
+        <div id="ai-analysis">
+          <p id="ai-analysis-body" class="ai-analysis-body"></p>
+        </div>
       </div>
     </div>
   </div>

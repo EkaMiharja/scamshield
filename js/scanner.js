@@ -9,6 +9,11 @@ const scanner = (function () {
     "promo", "discount", "reward", "unlock", "suspend", "expired", "otp",
     "billing", "invoice", "refund",
   ];
+  const GAMBLING_KEYWORDS = [
+    "judol", "judionline", "judi", "slot", "togel", "casino", "taruhan",
+    "poker", "lotre", "gacor", "maxwin", "rtp", "parlay", "jackpot",
+    "situsbola", "taruhanbola", "judisoccer", "pialabet", "sbobet", "agenjudol",
+  ];
 
   function normalizeUrl(raw) {
     let url = String(raw || "").trim();
@@ -119,6 +124,22 @@ const scanner = (function () {
     }
 
     const lower = (url + " " + domain).toLowerCase();
+    const foundGambling = GAMBLING_KEYWORDS.filter((k) => lower.includes(k));
+    checks.push({
+      label: "Indikasi Konten Judi Online",
+      status: foundGambling.length === 0 ? "pass" : "fail",
+      detail: foundGambling.length
+        ? "Ditemukan indikasi judi online: " + foundGambling.slice(0, 5).join(", ") + "."
+        : "Tidak ada indikasi konten judi online.",
+    });
+    if (foundGambling.length) {
+      score -= Math.min(40, 20 * foundGambling.length);
+      indicators.push({
+        severity: "danger",
+        text: "Indikasi situs judi online terdeteksi: " + foundGambling.slice(0, 4).join(", ") + ".",
+      });
+    }
+
     const foundKeywords = PHISHING_KEYWORDS.filter((k) => lower.includes(k));
     checks.push({
       label: "Kata Kunci Mencurigakan",

@@ -31,5 +31,17 @@ const gemini = (function () {
     }
   }
 
-  return { chat };
+  async function analyzeUrl(url) {
+    const messages = [
+      {
+        role: "user",
+        content:
+          "Periksa alamat situs ini: " + url + ". Berikan penilaian singkat apakah situs ini aman, mencurigakan, atau berbahaya, beserta 1-2 alasan utamanya. " +
+          "Jawab maksimal 900 karakter. Akhiri jawaban dengan baris persis: VERDICT: AMAN, VERDICT: MENURIGAKAN, atau VERDICT: BERBAHAYA sesuai penilaian Anda.",
+      },
+    ];
+    return chat(messages);
+  }
+
+  return { chat, analyzeUrl };
 })();

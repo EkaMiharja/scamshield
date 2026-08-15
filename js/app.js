@@ -22,7 +22,6 @@
   const gaugeCard = $("#gauge-card");
   const gaugeContainer = $("#gauge-container");
   const checklistEl = $("#checklist");
-  const breakdownEl = $("#breakdown");
   const matchAlert = $("#match-alert");
   const dashboardHost = $("#dashboard-host");
   const dashboardBadge = $("#dashboard-badge");
@@ -182,15 +181,15 @@
   }
 
   function renderDashboard(result) {
-    gauge.render(gaugeContainer, result.score, result.risk);
+    gaugeContainer.innerHTML =
+      '<div class="gauge-wrap gauge-pending"><span class="gauge-pending-text">Menunggu analisis AI...</span></div>';
 
     gaugeCard.classList.remove("risk-safe", "risk-warning", "risk-danger");
     gaugeCard.classList.add("risk-" + result.risk.toLowerCase());
 
     dashboardHost.textContent = result.host || "";
-    dashboardBadge.textContent = riskLabel(result.risk);
-    dashboardBadge.className =
-      "badge badge-" + (result.risk === "SAFE" ? "safe" : result.risk === "SUSPICIOUS" ? "warning" : "danger");
+    dashboardBadge.textContent = "Menunggu AI";
+    dashboardBadge.className = "badge badge-muted";
 
     checklistEl.innerHTML = result.checks
       .map(function (c) {
@@ -209,20 +208,9 @@
       })
       .join("");
 
-    breakdownEl.innerHTML = result.indicators.length
-      ? result.indicators
-          .map(function (i) {
-            return (
-              '<li class="threat-item threat-' + i.severity + '">' +
-              '<span class="threat-dot" aria-hidden="true"></span>' +
-              escapeHtml(i.text) +
-              "</li>"
-            );
-          })
-          .join("")
-      : '<li class="threat-item threat-clean"><span class="threat-dot" aria-hidden="true"></span>Tidak ada tanda risiko yang terdeteksi pada alamat situs ini.</li>';
+    recommendationEl.textContent = "Menunggu hasil analisis AI untuk menentukan rekomendasi.";
 
-    recommendationEl.textContent = result.recommendation;
+    runAiAnalysis(result.url, result);
 
     const matches = storage.searchReports(result.host || result.url);
     if (matches.length) {
@@ -232,6 +220,65 @@
     } else {
       matchAlert.hidden = true;
     }
+  }
+
+  /* ---------- AI Analysis ---------- */
+
+  const aiAnalysis = $("#ai-analysis");
+  const aiAnalysisBody = $("#ai-analysis-body");
+
+  const AI_RISK_SCORE = {
+    AMAN: 90,
+    MENURIGAKAN: 55,
+    BERBAHAYA: 20,
+  };
+
+  function riskFromScore(score) {
+    if (score < 50) return "DANGER";
+    if (score < 80) return "SUSPICIOUS";
+    return "SAFE";
+  }
+
+  function parseAiVerdict(text) {
+    const m = String(text || "").match(/\bVERDICT\s*:\s*(AMAN|MENURIGAKAN|BERBAHAYA)\b/);
+    return m ? m[1] : null;
+  }
+
+  const AI_RECOMMENDATION = {
+    SAFE: "Alamat situs ini lolos seluruh pemeriksaan. Tetap waspada terhadap rayuan (rekayasa sosial), dan selalu verifikasi alamat sebelum memasukkan data pribadi.",
+    SUSPICIOUS: "Beberapa tanda risiko terdeteksi. Jangan masukkan informasi pribadi. Verifikasi identitas situs melalui kanal resmi sebelum melanjutkan.",
+    DANGER: "Tanda risiko tinggi terdeteksi. Hindari situs ini, jangan masukkan data apa pun, dan segera laporkan melalui menu Laporkan Penipuan.",
+  };
+
+  function applyAiVerdict(result, verdict) {
+    const aiScore = verdict ? AI_RISK_SCORE[verdict] : undefined;
+    const merged = aiScore === undefined ? result.score : Math.round((result.score + aiScore) / 2);
+    const mergedRisk = riskFromScore(merged);
+
+    gauge.render(gaugeContainer, merged, mergedRisk);
+    gaugeCard.classList.remove("risk-safe", "risk-warning", "risk-danger");
+    gaugeCard.classList.add("risk-" + mergedRisk.toLowerCase());
+    dashboardBadge.textContent = riskLabel(mergedRisk);
+    dashboardBadge.className =
+      "badge badge-" + (mergedRisk === "SAFE" ? "safe" : mergedRisk === "SUSPICIOUS" ? "warning" : "danger");
+    recommendationEl.textContent = AI_RECOMMENDATION[mergedRisk] || result.recommendation;
+  }
+
+  function runAiAnalysis(url, result) {
+    aiAnalysis.hidden = false;
+    aiAnalysisBody.textContent = "Sentry AI sedang memeriksa alamat situs ini...";
+
+    gemini
+      .analyzeUrl(url)
+      .then(function (text) {
+        aiAnalysisBody.textContent = text.replace(/\bVERDICT\s*:\s*(AMAN|MENURIGAKAN|BERBAHAYA)\b/gi, "").trim();
+        applyAiVerdict(result, parseAiVerdict(text));
+      })
+      .catch(function (err) {
+        aiAnalysisBody.textContent =
+          "Analisis AI tidak tersedia saat ini. " + (err && err.message ? err.message : "Coba lagi nanti.");
+        applyAiVerdict(result, null);
+      });
   }
 
   /* ---------- Threat Feed ---------- */
