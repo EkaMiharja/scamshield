@@ -22,6 +22,16 @@ const scanner = (function () {
     "tembak ikan", "tembakikan", "fish game", "toto", "4d",
     "kepo", "kakek", "sultan", "boss", "royal", "casino online", "betting",
     "bookie", "odds", "wager", "stake", "bet365", "bettingonline",
+    "dewahoki", "88dewahoki", "dewa hoki", "dewabet", "dewaslot", "dewa slot",
+    "mpo", "mpobos", "mpo888", "mpo777", "mposlot", "olx138", "hoki138",
+    "mahjong138", "sedang138", "pusat138", "pragmatic", "pragmaticplay",
+    "pragmatic88", "microgaming", "habanero", "spadegaming", "pgsoft",
+    "pgsoftgame", "joker123", "jokerslot", "slotgacor88", "gacor77", "gacor118",
+    "raja999", "rajabola", "raja slot", "asia99", "asia138", "asiahoki",
+    "slot138", "panen138", "sultan138", "vegasslot", "vegas88", "sensa138",
+    "bola88", "bola138", "sbobet88", "bet188", "winbet", "mega888", "918kiss",
+    "ibet", "88tangkas", "tangkasnet", "mainkan", "maxbet", "ggbet", "dafabet",
+    "betway", "pinnacle", "1xbet", "melbet", "22bet", "parimatch", "leonbet",
   ];
 
   function normalizeUrl(raw) {
