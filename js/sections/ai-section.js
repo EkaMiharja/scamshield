@@ -1,6 +1,6 @@
 window.sections = window.sections || {};
 window.sections.ai = `
-  <div class="container container-narrow">
+  <div class="container container-chat">
     <div class="section-head section-head-center">
       <h2 id="ai-title" class="section-title">Sentry AI</h2>
       <p class="section-sub">Tanyakan apa saja seputar keamanan digital: cara mengenali penipuan, makna hasil pemeriksaan, atau cara melindungi data pribadi.</p>
