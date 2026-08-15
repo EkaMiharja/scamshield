@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScamShield Hub</title>
+  <meta name="description" content="Platform untuk memeriksa dan melaporkan situs mencurigakan. Analisis berjalan langsung di perangkat Anda, tanpa server dan tanpa mengirim data ke mana pun.">
+  <meta name="theme-color" content="#ffffff">
+  <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
+  <link rel="shortcut icon" href="assets/favicon.ico">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Langsung ke konten</a>
+
+  <header class="nav-wrap">
+    <nav class="pill-nav" aria-label="Navigasi utama">
+      <a class="nav-brand" href="#scanner" data-section="scanner" aria-label="ScamShield Hub, Beranda">
+        <span class="brand-name">ScamShield<span class="brand-accent">Hub</span></span>
+      </a>
+      <button id="nav-toggle" class="nav-toggle" aria-expanded="false" aria-controls="nav-menu" aria-label="Buka menu navigasi">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      </button>
+      <div id="nav-menu" class="nav-menu">
+        <a class="nav-link" href="#scanner" data-section="scanner">Cek Situs</a>
+        <a class="nav-link" href="#feed" data-section="feed">Laporan Terbaru</a>
+        <a class="nav-link" href="#report" data-section="report">Laporkan Penipuan</a>
+        <a class="nav-link" href="#ai" data-section="ai">AI Asisten</a>
+      </div>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section id="scanner-section" class="section" aria-labelledby="scanner-title"></section>
+
+    <section id="dashboard-section" class="section" hidden aria-labelledby="dashboard-title"></section>
+
+    <section id="feed-section" class="section" aria-labelledby="feed-title"></section>
+
+    <section id="report-section" class="section" aria-labelledby="report-title"></section>
+
+    <section id="ai-section" class="section" aria-labelledby="ai-title"></section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <span class="brand-name">ScamShield<span class="brand-accent">Hub</span></span>
+        <p>Platform cek &amp; lapor penipuan online yang berjalan 100% di perangkat Anda. Dibangun untuk SDG 9: Industri, Inovasi &amp; Infrastruktur.</p>
+      </div>
+      <nav class="footer-nav" aria-label="Navigasi footer">
+        <h4>Navigasi</h4>
+        <a href="#scanner">Cek Situs</a>
+        <a href="#feed">Laporan Terbaru</a>
+        <a href="#report">Laporkan Penipuan</a>
+        <a href="#ai">AI Asisten</a>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <div class="container footer-bottom-inner">
+        <p>© 2026 ScamShield Hub. Dibangun untuk SDG Tech Switch Fest.</p>
+        <p class="disclaimer">Disclaimer: Hasil analisis bersifat perkiraan berdasarkan aturan, bukan jaminan keamanan mutlak. Selalu verifikasi melalui kanal resmi.</p>
+      </div>
+    </div>
+  </footer>
+
+  <div id="toast-wrap" class="toast-wrap" aria-live="polite"></div>
+
+  <script src="js/storage.js"></script>
+  <script src="js/scanner.js"></script>
+  <script src="js/gauge.js"></script>
+  <script src="js/gemini.js"></script>
+  <script src="js/sections/scanner-section.js"></script>
+  <script src="js/sections/dashboard-section.js"></script>
+  <script src="js/sections/feed-section.js"></script>
+  <script src="js/sections/report-section.js"></script>
+  <script src="js/sections/ai-section.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+const scanner = (function () {
+  const SUSPICIOUS_TLDS = [
+    "xyz", "top", "tk", "click", "zip", "mov", "gq", "ml", "cf", "ga",
+    "icu", "buzz", "cam", "work", "rest", "bond", "cyou", "cfd", "quest",
+  ];
+  const PHISHING_KEYWORDS = [
+    "login", "verify", "account", "secure", "bank", "update", "confirm",
+    "password", "wallet", "bonus", "free", "win", "prize", "claim", "gift",
+    "promo", "discount", "reward", "unlock", "suspend", "expired", "otp",
+    "billing", "invoice", "refund",
+  ];
+
+  function normalizeUrl(raw) {
+    let url = String(raw || "").trim();
+    if (!url) return "";
+    if (!/^https?:\/\//i.test(url)) url = "https://" + url;
+    return url;
+  }
+
+  function invalidResult(url) {
+    return {
+      url: url,
+      host: "",
+      score: 0,
+      risk: "DANGER",
+      checks: [
+        { label: "Struktur Alamat Situs", status: "fail", detail: "Alamat yang Anda masukkan tidak dikenali sebagai alamat situs yang valid." },
+      ],
+      indicators: [{ severity: "danger", text: "Format alamat tidak dikenali sebagai alamat situs yang valid." }],
+      recommendation: "Yang Anda masukkan bukan alamat situs yang valid. Periksa kembali, contoh: https://www.contoh-situs.com.",
+    };
+  }
+
+  function analyzeUrl(raw) {
+    const url = normalizeUrl(raw);
+    if (!url) return invalidResult(url);
+
+    let parsed;
+    try {
+      parsed = new URL(url);
+    } catch (e) {
+      return invalidResult(url);
+    }
+
+    const host = parsed.hostname;
+    if (!host || !host.includes(".")) return invalidResult(url);
+
+    const checks = [];
+    const indicators = [];
+    let score = 100;
+
+    const isHttps = parsed.protocol === "https:";
+    checks.push({
+      label: "Koneksi Aman (HTTPS)",
+      status: isHttps ? "pass" : "fail",
+      detail: isHttps ? "Koneksi terenkripsi (TLS), aman dari penyadapan." : "Koneksi tidak terenkripsi, data dapat disadap di tengah jalan.",
+    });
+    if (!isHttps) {
+      score -= 20;
+      indicators.push({ severity: "danger", text: "Situs tidak memakai pengamanan HTTPS." });
+    }
+
+    const ipPattern = /^(\d{1,3}\.){3}\d{1,3}$/;
+    const isIp = ipPattern.test(host);
+    checks.push({
+      label: "Alamat IP sebagai Nama Situs",
+      status: isIp ? "fail" : "pass",
+      detail: isIp ? "Nama situsnya berupa deretan angka IP, pola umum situs penipuan." : "Nama situsnya berupa alamat biasa (bukan deretan angka).",
+    });
+    if (isIp) {
+      score -= 35;
+      indicators.push({ severity: "danger", text: "Situs memakai alamat IP (deretan angka) sebagai nama." });
+    }
+
+    const tld = host.split(".").pop().toLowerCase();
+    const isSuspiciousTld = SUSPICIOUS_TLDS.includes(tld);
+    checks.push({
+      label: "Akhiran Nama Situs",
+      status: isSuspiciousTld ? "fail" : "pass",
+      detail: isSuspiciousTld ? "." + tld + " masuk daftar akhiran berisiko tinggi." : "." + tld + " adalah akhiran yang umum digunakan.",
+    });
+    if (isSuspiciousTld) {
+      score -= 25;
+      indicators.push({ severity: "danger", text: "Akhiran nama situs berisiko tinggi: ." + tld });
+    }
+
+    const domain = host.replace(/^www\./, "");
+    const domainLength = domain.length;
+    checks.push({
+      label: "Panjang Nama Situs",
+      status: domainLength <= 30 ? "pass" : "warn",
+      detail: domainLength + " karakter, " + (domainLength <= 30 ? "panjang wajar." : "nama situs tidak wajar panjangnya."),
+    });
+    if (domainLength > 30) {
+      score -= 10;
+      indicators.push({ severity: "warning", text: "Nama situs sangat panjang." });
+    }
+
+    const subdomainCount = Math.max(0, domain.split(".").length - 2);
+    checks.push({
+      label: "Lapisan Alamat Situs",
+      status: subdomainCount <= 3 ? "pass" : "warn",
+      detail: "Terdapat " + subdomainCount + " lapisan sebelum nama situs.",
+    });
+    if (subdomainCount > 3) {
+      score -= 10;
+      indicators.push({ severity: "warning", text: "Struktur alamat situs berlapis berlebihan." });
+    }
+
+    const hyphenCount = (domain.match(/-/g) || []).length;
+    checks.push({
+      label: "Penggunaan Tanda Hubung",
+      status: hyphenCount <= 2 ? "pass" : "warn",
+      detail: hyphenCount + " tanda hubung ditemukan.",
+    });
+    if (hyphenCount > 2) {
+      score -= 8;
+      indicators.push({ severity: "warning", text: "Pola tanda hubung mencurigakan." });
+    }
+
+    const lower = (url + " " + domain).toLowerCase();
+    const foundKeywords = PHISHING_KEYWORDS.filter((k) => lower.includes(k));
+    checks.push({
+      label: "Kata Kunci Mencurigakan",
+      status: foundKeywords.length === 0 ? "pass" : "fail",
+      detail: foundKeywords.length
+        ? foundKeywords.length + " kata kunci berisiko: " + foundKeywords.slice(0, 5).join(", ")
+        : "Tidak ada kata kunci mencurigakan.",
+    });
+    if (foundKeywords.length) {
+      score -= Math.min(39, 13 * foundKeywords.length);
+      indicators.push({
+        severity: "danger",
+        text: "Kata kunci penipuan terdeteksi: " + foundKeywords.slice(0, 4).join(", "),
+      });
+    }
+
+    const hasCredential = /@/.test(url.replace("//", "")) || /(password|token|otp|login|key)=/i.test(url);
+    checks.push({
+      label: "Data Pribadi di Alamat Situs",
+      status: hasCredential ? "fail" : "pass",
+      detail: hasCredential ? "Alamat situs membawa data pribadi yang sensitif." : "Tidak ada data pribadi pada alamat situs.",
+    });
+    if (hasCredential) {
+      score -= 25;
+      indicators.push({ severity: "danger", text: "Alamat situs membawa data pribadi atau kode rahasia." });
+    }
+
+    const longUrl = url.length > 120;
+    checks.push({
+      label: "Panjang Alamat Situs",
+      status: longUrl ? "warn" : "pass",
+      detail: url.length + " karakter, " + (longUrl ? "alamat tidak wajar panjang." : "panjang wajar."),
+    });
+    if (longUrl) {
+      score -= 5;
+      indicators.push({ severity: "warning", text: "Alamat situs sangat panjang." });
+    }
+
+    score = Math.max(0, Math.min(100, score));
+
+    let risk = "SAFE";
+    if (score < 50) risk = "DANGER";
+    else if (score < 80) risk = "SUSPICIOUS";
+
+    const recommendation = {
+      SAFE: "Alamat situs ini lolos seluruh pemeriksaan otomatis. Tetap waspada terhadap rayuan (rekayasa sosial), dan selalu verifikasi alamat sebelum memasukkan data pribadi.",
+      SUSPICIOUS: "Beberapa tanda risiko terdeteksi. Jangan masukkan informasi pribadi. Verifikasi identitas situs melalui kanal resmi sebelum melanjutkan.",
+      DANGER: "Tanda risiko tinggi terdeteksi. Hindari situs ini, jangan masukkan data apa pun, dan segera laporkan melalui tombol 'Laporkan Penipuan'.",
+    }[risk];
+
+    return { url, host, score, risk, checks, indicators, recommendation };
+  }
+
+  return { analyzeUrl, normalizeUrl };
+})();

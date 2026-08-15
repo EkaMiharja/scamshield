@@ -1,0 +1,14 @@
+{
+  "name": "scamshield-hub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ScamShield Hub - Platform deteksi & pelaporan scam 100% client-side + chat AI Gemini",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "node server/server.js",
+    "dev:vercel": "vercel dev"
+  },
+  "keywords": [],
+  "license": "MIT"
+}
