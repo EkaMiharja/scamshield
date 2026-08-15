@@ -34,6 +34,11 @@ const storage = (function () {
     localStorage.setItem(KEY, JSON.stringify(reports));
   }
 
+  function updateReportStatus(id, status) {
+    const reports = getReports().map((r) => (r.id === id ? { ...r, status } : r));
+    localStorage.setItem(KEY, JSON.stringify(reports));
+  }
+
   function searchReports(query) {
     if (!query) return [];
     const q = String(query).toLowerCase().replace(/^https?:\/\//, "").replace(/\/.*$/, "");
@@ -107,5 +112,5 @@ const storage = (function () {
     ];
   }
 
-  return { getReports, saveReport, deleteReport, searchReports };
+  return { getReports, saveReport, deleteReport, updateReportStatus, searchReports };
 })();

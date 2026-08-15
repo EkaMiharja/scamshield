@@ -34,6 +34,8 @@
   const reportForm = $("#report-form");
   const toastWrap = $("#toast-wrap");
 
+  let pendingStatusReportId = null;
+
   const ICON_CHECK =
     '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>';
   const ICON_X =
@@ -69,9 +71,15 @@
       {
         "Verified Scam": "Terbukti Penipuan",
         "Under Review": "Sedang Ditinjau",
+        Suspicious: "Mencurigakan",
         Resolved: "Sudah Tuntas",
       }[s] || s
     );
+  }
+
+  function statusBadgeHtml(r) {
+    const cls = r.status === "Verified Scam" ? "danger" : r.status === "Resolved" ? "safe" : "warning";
+    return '<span class="badge badge-' + cls + '">' + escapeHtml(statusLabel(r.status)) + "</span>";
   }
 
   function categoryLabel(c) {
@@ -110,6 +118,8 @@
     });
 
     closeMenu();
+
+    if (id === "feed") renderFeed(feedFilter.value);
 
     if (window.location.hash !== "#" + id) {
       history.replaceState(null, "", "#" + id);
@@ -262,6 +272,21 @@
     dashboardBadge.className =
       "badge badge-" + (mergedRisk === "SAFE" ? "safe" : mergedRisk === "SUSPICIOUS" ? "warning" : "danger");
     recommendationEl.textContent = AI_RECOMMENDATION[mergedRisk] || result.recommendation;
+
+    if (pendingStatusReportId) {
+      const rid = pendingStatusReportId;
+      pendingStatusReportId = null;
+      const report = storage.getReports().find((r) => r.id === rid);
+      if (report) {
+        const newStatus =
+          mergedRisk === "DANGER" ? "Verified Scam" : mergedRisk === "SUSPICIOUS" ? "Suspicious" : "Resolved";
+        storage.updateReportStatus(rid, newStatus);
+        showToast(
+          "Status laporan diperbarui: " + statusLabel(newStatus) + " (" + riskLabel(mergedRisk) + ").",
+          mergedRisk === "DANGER" ? "danger" : "info"
+        );
+      }
+    }
   }
 
   function runAiAnalysis(url, result) {
@@ -302,12 +327,11 @@
 
     feedList.innerHTML = list
       .map(function (r) {
-        const statusClass = r.status === "Verified Scam" ? "danger" : r.status === "Resolved" ? "safe" : "warning";
         return (
           '<article class="card feed-card">' +
           '<div class="feed-head">' +
           '<span class="feed-domain mono" title="' + escapeHtml(r.url) + '">' + escapeHtml(r.url) + "</span>" +
-          '<span class="badge badge-' + statusClass + '">' + escapeHtml(statusLabel(r.status)) + "</span>" +
+          statusBadgeHtml(r) +
           "</div>" +
           '<div class="feed-meta">' +
           '<span class="chip">' + escapeHtml(categoryLabel(r.category)) + "</span>" +
@@ -318,6 +342,7 @@
             ? '<p class="feed-contact">Kontak: <span class="mono">' + escapeHtml(r.contact) + "</span></p>"
             : "") +
           '<div class="feed-actions">' +
+          '<button type="button" class="btn-ghost btn-sm" data-scan-id="' + escapeHtml(r.id) + '">Scan Link</button>' +
           '<button type="button" class="btn-ghost btn-sm" data-report-url="' + escapeHtml(r.url) + '">Laporkan Serupa</button>' +
           '<button type="button" class="btn-ghost btn-icon btn-sm" data-delete-id="' + escapeHtml(r.id) + '" aria-label="Hapus laporan">' + ICON_X + "</button>" +
           "</div>" +
@@ -332,6 +357,17 @@
   });
 
   feedList.addEventListener("click", function (e) {
+    const scanBtn = e.target.closest("[data-scan-id]");
+    if (scanBtn) {
+      const report = storage.getReports().find((r) => r.id === scanBtn.dataset.scanId);
+      if (!report) return;
+      pendingStatusReportId = report.id;
+      urlInput.value = report.url;
+      showSection("scanner");
+      document.getElementById("scanner-section").scrollIntoView({ behavior: "smooth", block: "start" });
+      runAnalysis();
+      return;
+    }
     const reportBtn = e.target.closest("[data-report-url]");
     if (reportBtn) {
       $("#report-url").value = reportBtn.dataset.reportUrl;
