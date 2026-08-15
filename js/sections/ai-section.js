@@ -10,7 +10,7 @@ window.sections.ai = `
       <div id="chat-log" class="chat-log" aria-live="polite">
         <div class="chat-msg chat-msg-bot">
           <span class="chat-avatar" aria-hidden="true">AI</span>
-          <div class="chat-bubble">Halo! Saya asisten ScamShield Hub. Tanya saya soal penipuan online, situs mencurigakan, atau cara aman berselancar di internet.</div>
+          <div class="chat-bubble">Halo! Saya Sentry AI dari ScamShield Hub. Tanya saya soal penipuan online, situs mencurigakan, atau cara aman berselancar di internet.</div>
         </div>
       </div>
       <div id="chat-status" class="chat-status" hidden>
@@ -18,7 +18,7 @@ window.sections.ai = `
         <span>AI sedang mengetik...</span>
       </div>
       <form id="chat-form" class="chat-form">
-        <input id="chat-input" type="text" placeholder="Tulis pertanyaan Anda..." aria-label="Pertanyaan untuk AI" autocomplete="off" spellcheck="false">
+        <input id="chat-input" type="text" maxlength="500" placeholder="Tulis pertanyaan Anda (maks. 500 karakter)..." aria-label="Pertanyaan untuk AI" autocomplete="off" spellcheck="false">
         <button id="chat-send" class="btn-primary btn-buy chat-send" type="submit">Kirim</button>
       </form>
       <div class="chat-suggest" aria-label="Pertanyaan contoh">
