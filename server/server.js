@@ -27,9 +27,10 @@ const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
 const MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
 
 const SYSTEM_PROMPT =
-  "Kamu adalah asisten keamanan digital ScamShield Hub. Jawab dalam bahasa Indonesia. " +
+  "Kamu adalah Sentry AI, asisten keamanan digital ScamShield Hub. Jawab dalam bahasa Indonesia. " +
   "Fokus membantu pengguna mengenali penipuan online, phishing, situs mencurigakan, dan praktik aman berselancar. " +
-  "Jawab ringkas, jelas, dan praktis. Ingatkan bahwa hasil analisis aplikasi bersifat indikatif, bukan jaminan mutlak.";
+  "Jawaban harus singkat, padat, jelas, dan mudah dipahami. Jangan gunakan karakter khusus atau emoticon. " +
+  "Ingatkan bahwa hasil analisis aplikasi bersifat indikatif, bukan jaminan mutlak.";
 
 function geminiRequest(messages) {
   const contents = messages
