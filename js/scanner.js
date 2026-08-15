@@ -33,6 +33,18 @@ const scanner = (function () {
     "ibet", "88tangkas", "tangkasnet", "mainkan", "maxbet", "ggbet", "dafabet",
     "betway", "pinnacle", "1xbet", "melbet", "22bet", "parimatch", "leonbet",
   ];
+  const KNOWN_BRANDS = [
+    "google", "youtube", "facebook", "instagram", "whatsapp", "telegram",
+    "twitter", "x", "tiktok", "linkedin", "github", "netflix", "spotify",
+    "amazon", "paypal", "apple", "microsoft", "windows", "office", "outlook",
+    "mozilla", "firefox", "wikipedia", "reddit", "yahoo", "bing", "duckduckgo",
+    "shopee", "tokopedia", "lazada", "blibli", "bukalapak", "bilibili",
+    "dana", "ovo", "gopay", "grab", "grabpay", "linkaja", "shopee pay",
+    "bca", "mandiri", "bri", "bni", "btn", "mandiriklik", "bca klik", "mybca",
+    "atm", "payfazz", "doku", "midtrans", "xendit", "kredivo", "akulaku", "julio", "gopaylater",
+    "gojek", "maxim", "traveloka", "tiket", "agoda", "airbnb", "booking",
+    "kominfo", "djp", "pajak", "bpjs", "sim", "ktp", "ewallet", "bank",
+  ];
 
   function normalizeUrl(raw) {
     let url = String(raw || "").trim();
@@ -53,6 +65,79 @@ const scanner = (function () {
       indicators: [{ severity: "danger", text: "Format alamat tidak dikenali sebagai alamat situs yang valid." }],
       recommendation: "Yang Anda masukkan bukan alamat situs yang valid. Periksa kembali, contoh: https://www.contoh-situs.com.",
     };
+  }
+
+  function levenshtein(a, b) {
+    const m = a.length;
+    const n = b.length;
+    const dp = [];
+    for (let i = 0; i <= m; i++) {
+      dp[i] = [];
+      dp[i][0] = i;
+    }
+    for (let j = 0; j <= n; j++) dp[0][j] = j;
+    for (let i = 1; i <= m; i++) {
+      for (let j = 1; j <= n; j++) {
+        const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+        dp[i][j] = Math.min(dp[i - 1][j] + 1, dp[i][j - 1] + 1, dp[i - 1][j - 1] + cost);
+      }
+    }
+    return dp[m][n];
+  }
+
+  function detectTyposquat(domain) {
+    const parts = domain.toLowerCase().replace(/^www\./, "").split(".");
+    const label = parts.length >= 2 ? parts[parts.length - 2] : parts[0];
+    const base = (label || "").replace(/[^a-z0-9]/g, "");
+    if (!base) return null;
+
+    for (let k = 0; k < KNOWN_BRANDS.length; k++) {
+      if (base === KNOWN_BRANDS[k].replace(/\s/g, "")) return null;
+    }
+
+    let closest = null;
+    let closestDist = Infinity;
+
+    for (let i = 0; i < KNOWN_BRANDS.length; i++) {
+      const brand = KNOWN_BRANDS[i].replace(/\s/g, "");
+      if (brand.length < 3 || base === brand) continue;
+
+      if (base.includes(brand)) {
+        const prefix = base.slice(0, base.indexOf(brand));
+        const suffix = base.slice(base.indexOf(brand) + brand.length);
+        if (prefix.length <= 3 && suffix.length <= 3) return brand;
+        if (
+          (prefix.length >= 1 || suffix.length >= 1) &&
+          prefix.length <= 6 &&
+          suffix.length <= 6 &&
+          /(login|verify|secure|account|check|confirm|update|signin|auth|support|help|promo|bonus|free|win|prize|claim|gift|reward|bank|online|mobile|pay|resmi|official|safe|guard|otp|verification|acc|id|co|com|net|xyz|top|info)$/.test(prefix + suffix)
+        ) {
+          return brand;
+        }
+      }
+
+      if (brand.length >= 6 && base.length >= brand.length - 1 && base.length <= brand.length + 6) {
+        const d = substringEditDistance(base, brand);
+        if (d >= 1 && d < closestDist && d <= 2) {
+          closestDist = d;
+          closest = brand;
+        }
+      }
+    }
+
+    return closest;
+  }
+
+  function substringEditDistance(base, brand) {
+    let best = Infinity;
+    const b = brand.length;
+    const last = base.length - b + 1;
+    for (let start = 0; start <= last; start++) {
+      const win = base.slice(start, start + b);
+      const d = levenshtein(win, brand);
+      if (d < best) best = d;
+    }
+    return best;
   }
 
   function analyzeUrl(raw) {
@@ -140,6 +225,22 @@ const scanner = (function () {
     if (hyphenCount > 2) {
       score -= 8;
       indicators.push({ severity: "warning", text: "Pola tanda hubung mencurigakan." });
+    }
+
+    const typosquat = detectTyposquat(domain);
+    checks.push({
+      label: "Kemiripan dengan Merek Terkenal",
+      status: typosquat ? "fail" : "pass",
+      detail: typosquat
+        ? "Nama situs menyerupai merek terkenal: " + typosquat + "."
+        : "Tidak ada kemiripan dengan merek terkenal.",
+    });
+    if (typosquat) {
+      score -= 30;
+      indicators.push({
+        severity: "danger",
+        text: "Kemungkinan typosquatting: meniru merek " + typosquat + ".",
+      });
     }
 
     const lower = (url + " " + domain).toLowerCase();
