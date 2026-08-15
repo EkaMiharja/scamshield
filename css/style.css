@@ -1018,10 +1018,14 @@ a {
 .feed-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 10px;
   margin-top: auto;
   padding-top: 4px;
+}
+
+.feed-actions .btn-icon {
+  margin-left: auto;
 }
 
 .feed-empty {
