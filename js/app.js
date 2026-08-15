@@ -403,7 +403,7 @@
     const avatar = document.createElement("span");
     avatar.className = "chat-avatar";
     avatar.setAttribute("aria-hidden", "true");
-    avatar.textContent = role === "user" ? "Anda" : "AI";
+    avatar.textContent = role === "user" ? "A" : "AI";
     const bubble = document.createElement("div");
     bubble.className = "chat-bubble";
     bubble.textContent = text;
