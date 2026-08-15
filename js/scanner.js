@@ -13,6 +13,15 @@ const scanner = (function () {
     "judol", "judionline", "judi", "slot", "togel", "casino", "taruhan",
     "poker", "lotre", "gacor", "maxwin", "rtp", "parlay", "jackpot",
     "situsbola", "taruhanbola", "judisoccer", "pialabet", "sbobet", "agenjudol",
+    "judi online", "game online slot", "mesin slot", "slot online", "slot gacor",
+    "idn poker", "idnslot", "poker88", "pkv", "bandar", "bandar66", "ceme",
+    "domino", "dominoqq", "qq", "capsa", "sakong", "baccarat", "roulette",
+    "sicbo", "dragon", "mahjong", "olympus", "starlight", "gates", "zeus",
+    "bonanza", "sugar", "joker", "slot88", "slot777", "slot demo", "scatter",
+    "free spin", "bigwin", "linkaja", "slotgacor", "bandarq", "dingdong",
+    "tembak ikan", "tembakikan", "fish game", "toto", "4d",
+    "kepo", "kakek", "sultan", "boss", "royal", "casino online", "betting",
+    "bookie", "odds", "wager", "stake", "bet365", "bettingonline",
   ];
 
   function normalizeUrl(raw) {
