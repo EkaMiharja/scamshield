@@ -2,9 +2,8 @@ window.sections = window.sections || {};
 window.sections.ai = `
   <div class="container container-narrow">
     <div class="section-head section-head-center">
-      <span class="section-kicker">Asisten Kecerdasan Buatan</span>
-      <h2 id="ai-title" class="section-title">AI Asisten</h2>
-      <p class="section-sub">Tanyakan apa saja seputar keamanan digital: cara mengenali penipuan, makna hasil pemeriksaan, atau cara melindungi data pribadi. Ditenagai Gemini AI.</p>
+      <h2 id="ai-title" class="section-title">Sentry AI</h2>
+      <p class="section-sub">Tanyakan apa saja seputar keamanan digital: cara mengenali penipuan, makna hasil pemeriksaan, atau cara melindungi data pribadi.</p>
     </div>
 
     <div class="card chat-card">
