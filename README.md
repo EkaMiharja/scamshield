@@ -64,6 +64,7 @@ Pemeriksaan heuristik yang dijalankan seluruhnya di peramban:
 - Panjang domain, kedalaman subdomain, dan pola hyphen
 - Pencocokan **kata kunci phishing** (login, verify, free, prize, dll.)
 - Deteksi kredensial/query mencurigakan pada URL
+- Pencocokan **kata kunci judi online**
 
 Skor Trust (0–100) diklasifikasikan menjadi **SAFE** (hijau), **SUSPICIOUS** (amber), dan **DANGER** (merah).
 
