@@ -66,6 +66,7 @@ Pemeriksaan heuristik yang dijalankan seluruhnya di peramban:
 - Deteksi **indikasi judi online** — 140+ kata kunci slot/togel/casino/situs judi ternama (mis. `dewahoki`, `sbobet`, `poker88`)
 - Pencocokan **kata kunci phishing** (login, verify, free, prize, dll.)
 - Deteksi kredensial/query mencurigakan pada URL
+- Pencocokan **kata kunci judi online**
 
 Skor Trust (0–100) diklasifikasikan menjadi **SAFE** (hijau), **SUSPICIOUS** (amber), dan **DANGER** (merah).
 
